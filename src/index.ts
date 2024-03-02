@@ -15,7 +15,7 @@ const db: string = "mongodb://localhost:27017/MyBrand";
 mongoose
   .connect(db)
   .then(() => {
-    console.log("Database connected successfully");
+    console.log("Database connected successfully!");
 
     app.listen(5000, () => {
       console.log("Server listening at http://localhost:5000");
