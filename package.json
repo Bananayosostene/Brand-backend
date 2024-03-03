@@ -58,7 +58,7 @@
   "scripts": {
     "test": "jest",
     "dev": "ts-node-dev --pretty --respawn ./src/index.ts",
-    "start": "node ./src/index.ts",
+    "start": "ts-node ./src/index.ts",
     "build": "tsc",
     "test:watch": "jest --watch"
   },
