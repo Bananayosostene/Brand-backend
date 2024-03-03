@@ -10,7 +10,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use("/brand", mainrouter);
 
-const db: string = "mongodb://localhost:27017/MyBrand";
+const db: string =  "mongodb+srv://Sostene:sostene123@cluster0.16msskq.mongodb.net/MyBrand?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose
   .connect(db)
