@@ -3,9 +3,9 @@ import userRouter from "./userendpoints";
 import contactRouter from "./contactendoints";
 import blogRouter from "./blogendpoints";
 
-const mainrouter: Router = Router();
-mainrouter.use("/contact", contactRouter);
-mainrouter.use("/user", userRouter); 
-mainrouter.use("/blog", blogRouter); 
+const mainRouter: Router = Router();
+mainRouter.use("/contact", contactRouter);
+mainRouter.use("/user", userRouter); 
+mainRouter.use("/blog", blogRouter); 
 
-export default mainrouter;
+export default mainRouter;
