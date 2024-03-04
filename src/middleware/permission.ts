@@ -15,7 +15,7 @@ export const isAdmin: (
 ) => void = (req, res, next) => {
   const userRole = req.user?.role;
 
-  if (userRole === "admin") {
+  if (userRole == "admin") {
     next();
   } else {
     return res.status(403).json({

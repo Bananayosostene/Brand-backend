@@ -5,7 +5,7 @@ import { generateToken } from "../utils/token";
 export const login = async (req: Request, res: Response) => {
   try {
     const userEmail = req.body.useremail;
-    const userPassword = req.body.userpassword;
+    const userPassword = req.body.password;
 
     const user = await UserModel.findOne({ email: userEmail });
 
@@ -15,6 +15,8 @@ export const login = async (req: Request, res: Response) => {
 
       let token = generateToken(userInfos);
       let isValidPass = await passComparer(userPassword, user.password);
+      
+      
       if (isValidPass) {
         return res.status(200).json({
           message: "Login successful",
@@ -33,11 +35,11 @@ export const login = async (req: Request, res: Response) => {
         data: null,
       });
     }
-  } catch (error) {
+  } catch (error:any) {
     return res.status(500).json({
       message: "Internal Server Error",
       data: null,
-      theErrorIs: error,
+      theErrorIs: error.message,
     });
   }
 };

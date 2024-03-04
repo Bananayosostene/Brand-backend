@@ -4,7 +4,7 @@ import { findAllContacts } from "../controllers/findAllCont";
 import { findContactById } from "../controllers/findOneCont";
 import { createContact } from "../controllers/createCont";
 import { verifyingToken } from "../utils/token";
-import { isAdmin } from "../midddleware/permission";
+import { isAdmin } from "../middleware/permission";
 
 const contactRouter: Router = express.Router();
 
