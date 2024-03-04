@@ -4,7 +4,9 @@ interface UserAttributes {
   username: string;
   email: string;
   password: string;
+  role: String;
 }
+
 
 interface UserDocument extends Document, UserAttributes {}
 
@@ -21,6 +23,10 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  role: {
+    type: String,
+    default: "admin",
   },
 });
 

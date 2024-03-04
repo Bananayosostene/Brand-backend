@@ -8,9 +8,9 @@ interface AuthenticatedRequest extends Request {
   userId?: string;
   userEmail?: string;
 }
-let secret = "mysecret";
-let duration = "10m";
-export const tokengenerating = (payload: any): string => {
+let secret = "mySecret";
+let duration = "30m";
+export const generateToken = (payload: any): string => {
   console.log("-----the process.env.JWT_EXP is ", duration);
   let token = jwt.sign(payload, secret, {
     expiresIn: duration,
@@ -18,13 +18,12 @@ export const tokengenerating = (payload: any): string => {
   return token;
 };
 
-export const verifyingtoken = async (
+export const verifyingToken = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
   try {
-    // console.log("in----------------------------------- verify token");
     let auth = req.headers.authorization;
     let token = auth?.split(" ")[1];
     if (!token) {
@@ -40,6 +39,8 @@ export const verifyingtoken = async (
         });
       }
       req.user = decoded;
+   
+
       next();
     });
   } catch (err) {

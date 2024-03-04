@@ -8,6 +8,11 @@ interface ContactAttributes {
   
 }
 
+function validateEmail(email: string): boolean {
+  const re = /\S+@\S+\.\S+/;
+  return re.test(email);
+}
+
 interface ContactDocument extends Document, ContactAttributes {}
 
 const contactSchema: Schema<ContactDocument> = new mongoose.Schema({
@@ -18,10 +23,23 @@ const contactSchema: Schema<ContactDocument> = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true, 
+    validate: [
+      {
+        validator: (value: string) => validateEmail(value),
+        message: "Invalid email format",
+      },
+      {
+        validator: async function (value: string) {
+          const existingContact = await ContactModel.findOne({ email: value });
+          return !existingContact; // Return true if the email is unique
+        },
+        message: "Email must be unique",
+      },
+    ],
   },
   message: {
     type: String,
-    required: true,
   },
   createdAt: {
     type: String,

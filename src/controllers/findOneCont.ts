@@ -14,7 +14,6 @@ export const findContactById = async (req: Request, res: Response) => {
       });
     }
     else {
-      console.log("!!!!!!!!!!!!!", id);
       return res.status(404).json({
         message: "Contact not found",
         data: null,
