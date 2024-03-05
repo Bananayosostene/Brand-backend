@@ -5,7 +5,7 @@ export const updateUserById = async (req: Request, res: Response) => {
   try {
     const id: string = req.params.userId;
 
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).select("-password");
     if (!user) {
       return res.status(404).json({
         message: "User not found",

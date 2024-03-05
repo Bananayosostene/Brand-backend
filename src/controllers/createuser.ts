@@ -7,7 +7,7 @@ export const createUser = async (req: Request, res: Response) => {
     const { username, email, password, role } = req.body;
 
     console.log("req.body.email is", req.body.email);
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await UserModel.findOne({ email }).select("-password");
     if (existingUser) {
       return res.status(400).json({
         message: "User with this email already exists",

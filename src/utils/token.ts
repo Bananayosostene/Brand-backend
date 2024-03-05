@@ -11,7 +11,6 @@ interface AuthenticatedRequest extends Request {
 let secret = "mySecret";
 let duration = "30m";
 export const generateToken = (payload: any): string => {
-  console.log("-----the process.env.JWT_EXP is ", duration);
   let token = jwt.sign(payload, secret, {
     expiresIn: duration,
   });

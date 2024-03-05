@@ -4,9 +4,8 @@ interface UserAttributes {
   username: string;
   email: string;
   password: string;
-  role: String;
+  role: string;
 }
-
 
 interface UserDocument extends Document, UserAttributes {}
 
@@ -19,6 +18,10 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (value: string) => /\S+@\S+\.\S+/.test(value),
+      message: (props) => `${props.value} is not a valid email address!`,
+    },
   },
   password: {
     type: String,
@@ -26,7 +29,7 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: "admin",
+    default: "user",
   },
 });
 

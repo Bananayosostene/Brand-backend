@@ -11,17 +11,16 @@ import { likingBlogById } from "../controllers/likingblog";
 import { createComment } from "../controllers/createComments";
 import { findCommentsOnBlog } from "../controllers/FindCommentsOnOneBlog";
 import { deleteCommentsOnBlog } from "../controllers/deleteCommentsOnBlog";
-import { isAdmin } from "../middleware/permission";
+import { adminAuthMiddleware } from "../middleware/permission";
 
 const blogRouter: Router = express.Router();
 
 blogRouter.use(verifyingToken);
 blogRouter.post("/like/:blogId", likingBlogById);
 blogRouter.post("/createCom/:blogId", createComment);
-blogRouter.use(isAdmin);
+blogRouter.use(adminAuthMiddleware);
 blogRouter.post("/post", uploaded, createBlog);
 blogRouter.get("/get/:blogId", findBlogById);
-blogRouter.use(verifyingToken);
 blogRouter.get("/gets", findAllBlogs);
 blogRouter.delete("/delete/:blogId", deleteBlogById);
 blogRouter.patch("/update/:blogId", updateBlogById);

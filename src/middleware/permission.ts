@@ -1,25 +1,40 @@
+// adminAuthMiddleware.ts
+
 import { Request, Response, NextFunction } from "express";
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: any;
-    userId?: string;
-    userEmail?: string;
-    userRole?: string; // Add userRole property
-  }
+import UserModel from "../models/userModel";
+
+interface AuthenticatedRequest extends Request {
+  user?: any;
+  userId?: string;
+  userEmail?: string;
 }
 
-export const isAdmin: (
-  req: Request,
+export const adminAuthMiddleware = async (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => void = (req, res, next) => {
-  const userRole = req.user?.role;
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Unauthorized - User not authenticated",
+      });
+    }
 
-  if (userRole == "admin") {
-    next();
-  } else {
-    return res.status(403).json({
-      message: "Permission denied. User is not an admin.",
+    const user = await UserModel.findById(req.user._id);
+
+    if (user && user.role === "admin") {
+      next();
+    } else {
+      return res.status(403).json({
+        message: "Forbidden - User does not have admin privileges",
+      });
+    }
+  } catch (error:any) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      data: null,
+      theErrorIs: error.message,
     });
   }
 };

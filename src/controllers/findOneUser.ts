@@ -4,7 +4,7 @@ import UserModel from "../models/userModel";
 export const findUserById = async (req: Request, res: Response) => {
   try {
     const id: string = req.params.userId;
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).select("-password");
 
     if (user) {
       return res.status(200).json({

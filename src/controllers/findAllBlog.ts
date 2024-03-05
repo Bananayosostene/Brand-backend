@@ -3,8 +3,7 @@ import BlogModel from "../models/blogModel";
 
 export const findAllBlogs = async (req: Request, res: Response) => {
   try {
-    const arrayOfBlogs = await BlogModel.find()
-      .populate("comments");
+    const arrayOfBlogs = await BlogModel.find().populate("comments");
 
     if (arrayOfBlogs.length > 0) {
       return res.status(200).json({

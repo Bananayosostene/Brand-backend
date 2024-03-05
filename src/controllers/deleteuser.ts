@@ -5,7 +5,7 @@ export const deleteUserById = async (req: Request, res: Response) => {
   try {
     const id: string = req.params.userId;
 
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -14,7 +14,7 @@ export const deleteUserById = async (req: Request, res: Response) => {
       });
     }
 
-    const deletedUser = await UserModel.findByIdAndDelete(id);
+    const deletedUser = await UserModel.findByIdAndDelete(id).select("-password");
 
     if (deletedUser) {
       return res.status(200).json({

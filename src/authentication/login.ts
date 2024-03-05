@@ -8,6 +8,7 @@ export const login = async (req: Request, res: Response) => {
     const userPassword = req.body.password;
 
     const user = await UserModel.findOne({ email: userEmail });
+    
 
     if (user) {
       console.log(user);

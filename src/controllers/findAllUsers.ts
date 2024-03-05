@@ -3,7 +3,7 @@ import UserModel from "../models/userModel";
 
 export const findAllUsers = async (req: Request, res: Response) => {
   try {
-    const arrayOfUsers = await UserModel.find();
+    const arrayOfUsers = await UserModel.find().select("-password");
 
     if (arrayOfUsers.length > 0) {
       // Users found
