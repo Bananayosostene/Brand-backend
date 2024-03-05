@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import BlogModel from "../models/blogModel";
-import CommentModel from "../models/commentsModel";
 import {commentSchema} from "../models/commentsModel";
 
 import mongoose from "mongoose";
@@ -8,8 +7,8 @@ mongoose.model("CommentModel", commentSchema);
 export const findBlogById = async (req: Request, res: Response) => {
   try {
     const id: string = req.params.blogId;
-    const blog = await BlogModel.findById(id);
-    // .populate('comments')
+    const blog = await BlogModel.findById(id)
+      .populate("comments");
 
     if (blog) {
       return res.status(200).json({

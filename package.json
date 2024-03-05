@@ -1,19 +1,26 @@
 {
   "dependencies": {
     "@types/body-parser": "^1.19.5",
+    "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/multer": "^1.4.11",
+    "@types/yamljs": "^0.2.34",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cloudinary": "^1.21.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.18.2",
+    "express": "^4.18.3",
     "joi": "^17.12.2",
+    "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer-storage-cloudinary": "^4.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "yaml": "^2.4.0",
+    "yamljs": "^0.3.0"
   },
   "name": "typescript-todo",
   "version": "1.0.0",
@@ -35,6 +42,8 @@
     "@types/node": "^20.11.20",
     "@types/sinon": "^17.0.3",
     "@types/supertest": "^6.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
     "@types/uuid": "^9.0.8",
     "chai": "^5.1.0",
     "chai-http": "^4.4.0",
@@ -60,7 +69,8 @@
     "dev": "ts-node-dev --pretty --respawn ./src/index.ts",
     "start": "ts-node ./src/index.ts",
     "build": "tsc",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "generate-docs": "swagger-jsdoc -d ./swaggerOptions.ts -o swagger.json && npx swagger-ui-express serve swagger.json"
   },
   "author": "",
   "license": "ISC",

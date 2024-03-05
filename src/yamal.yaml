@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: Your API Documentation
+  version: 1.0.0
+  description: Sostene brand
+servers:
+   - url: https://brand-backend-v2xk.onrender.com
+    description: Production server
+   - url: http://localhost:5000
+     description: Development server
+
+paths:
+  /brand/blog/post:
+    post:
+      summary: Create a new blog post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Title of the blog post
+                description:
+                  type: string
+                  description: Description of the blog post
+                image:
+                  type: string
+                  format: binary
+                  description: Image file for the blog post
+      responses:
+        '201':
+          description: Blog post created successfully
+          content:
+            application/json:
+              example:
+                message: Blog post created successfully
+                data:
+                  image: "https://example.com/image.jpg"
+                  title: "Example Blog Post"
+                  description: "This is an example blog post."
+                  comments: []
+                  likes: 0
+        '400':
+          description: Invalid request or missing image file
+          content:
+            application/json:
+              example:
+                message: Image file is required
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Failed to create a blog post
+                data: null
+                theErrorIs: "Error details here"
