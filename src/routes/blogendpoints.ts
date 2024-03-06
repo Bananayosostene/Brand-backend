@@ -24,7 +24,7 @@ blogRouter.post("/createCom/:blogId", createComment);
 blogRouter.use(adminAuthMiddleware);
 blogRouter.post("/post", uploaded, createBlog);
 blogRouter.delete("/delete/:blogId", deleteBlogById);
-blogRouter.patch("/update/:blogId", updateBlogById);
+blogRouter.patch("/update/:blogId", uploaded,updateBlogById);
 blogRouter.delete("/:blogId/deleteComments", deleteCommentsOnBlog);
 
 export default blogRouter;

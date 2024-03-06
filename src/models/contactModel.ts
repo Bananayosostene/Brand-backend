@@ -28,13 +28,6 @@ const contactSchema: Schema<ContactDocument> = new mongoose.Schema({
         validator: (value: string) => validateEmail(value),
         message: "Invalid email format",
       },
-      {
-        validator: async function (value: string) {
-          const existingContact = await ContactModel.findOne({ email: value });
-          return !existingContact; // Return true if the email is unique
-        },
-        message: "Email must be unique",
-      },
     ],
   },
   message: {
