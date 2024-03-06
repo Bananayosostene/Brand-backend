@@ -15,16 +15,16 @@ import { adminAuthMiddleware } from "../middleware/permission";
 
 const blogRouter: Router = express.Router();
 
+blogRouter.get("/get/:blogId", findBlogById);
+blogRouter.get("/gets", findAllBlogs);
+blogRouter.get("/:blogId/findCommentsOnBlog", findCommentsOnBlog);
 blogRouter.use(verifyingToken);
 blogRouter.post("/like/:blogId", likingBlogById);
 blogRouter.post("/createCom/:blogId", createComment);
 blogRouter.use(adminAuthMiddleware);
 blogRouter.post("/post", uploaded, createBlog);
-blogRouter.get("/get/:blogId", findBlogById);
-blogRouter.get("/gets", findAllBlogs);
 blogRouter.delete("/delete/:blogId", deleteBlogById);
 blogRouter.patch("/update/:blogId", updateBlogById);
-blogRouter.get("/:blogId/findCommentsOnBlog", findCommentsOnBlog);
 blogRouter.delete("/:blogId/deleteComments", deleteCommentsOnBlog);
 
 export default blogRouter;

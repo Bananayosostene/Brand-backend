@@ -18,8 +18,7 @@ import path from "path";
 const swaggerJsdoc = YAML.load(path.join(__dirname, "./yamal.yaml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerJsdoc));
 
-const DbConnection: string = process.env.db_live as string;
- console.log("-----------------", DbConnection);
+const DbConnection: string = process.env.onlineDB as string;
 mongoose
 .connect(DbConnection)
 .then(() => {
@@ -32,3 +31,4 @@ mongoose
     console.error("Error connecting to the database:", error);
     process.exit(1);
   });
+export default app;

@@ -12,7 +12,8 @@ import { passwordHashing } from "../utils/passencodingAnddecoding";
 import ContactModel from "../models/contactModel";
 import { generateToken, verifyingToken } from "../utils/token";
 import { any } from "joi";
-
+import { findCommentsOnBlog } from "../controllers/FindCommentsOnOneBlog";
+import CommentModel from "../../src/models/commentsModel";
 
 
 dotenv.config();
@@ -31,6 +32,36 @@ afterAll(async () => {
  
   await mongoose.disconnect();
 });
+
+//index.ts
+
+describe("Index File Test", () => {
+
+  it("should handle database connection errors", async () => {
+    (mongoose.connect as jest.Mock).mockRejectedValueOnce(
+      new Error("Database connection error")
+    );
+
+    const exitMock = jest
+      .spyOn(process, "exit")
+      .mockImplementationOnce((code?: number) => {
+        throw new Error(`Process exited with code ${code}`);
+      });
+
+    await expect(import("../index")).rejects.toThrow(
+      "Process exited with code 1"
+    );
+
+    expect(mongoose.connect).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Object)
+    );
+    expect(exitMock).toHaveBeenCalledWith(1);
+
+    exitMock.mockRestore();
+  });
+});
+
 
 //utils
 
@@ -526,6 +557,44 @@ describe("POST /login", () => {
       theErrorIs: expect.any(String),
     });
   });
+  it("should return 500 on internal server error during database query", async () => {
+    jest
+      .spyOn(UserModel, "findOne")
+      .mockRejectedValueOnce(new Error("Internal Server Error"));
+
+    const response: Response = await request.post("/brand/user/login").send({
+      useremail: "test@example.com",
+      userpassword: "testpassword",
+    });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      message: "Internal Server Error",
+      data: null,
+      theErrorIs: "Internal Server Error",
+    });
+  });
+  it("should return 401 if the password is invalid", async () => {
+    const testUser = {
+      email: "test@example.com",
+      password: "testpassword",
+    };
+
+    await UserModel.create(testUser);
+
+    const response: Response = await request.post("/brand/user/login").send({
+      useremail: testUser.email,
+      userpassword: "invalidpassword",
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      message: "invalid password",
+      data: null,
+    });
+  });
+
+
 });
 
 //find all users
@@ -821,3 +890,8 @@ describe("DELETE /brand/user/delete/:userId", () => {
     });
   });
 });
+
+
+//BLOGS
+
+//find comments on one blog

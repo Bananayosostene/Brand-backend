@@ -1,17 +1,137 @@
 openapi: 3.0.0
 info:
-  title: Your API Documentation
+  title: My API Documentation
   version: 1.0.0
   description: Sostene brand
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 servers:
-   - url: https://brand-backend-v2xk.onrender.com
-    description: Production server
    - url: http://localhost:5000
      description: Development server
+   - url: https://brand-backend-v2xk.onrender.com
+    description: Production server
 
+tags:
+    - name: Authentication
+      description: Endpoints related to managing Authentication
+    - name: Blogs
+      description: Endpoints related to managing blogs
+    - name: Like
+      description: Endpoint related to managing like
+    - name: Comments
+      description: Endpoints related to managing comments
+    - name: Users
+      description: Endpoints related to Users   
+    - name: Contact
+      description: Endpoints related to contact 
 paths:
+  /brand/user/post:
+    post:
+      tags:
+        - Authentication
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: User's username
+                email:
+                  type: string
+                  format: email
+                  description: User's email
+                password:
+                  type: string
+                  description: User's password
+                role:
+                  type: string
+                  description: User's role (optional, default: "user")
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              example:
+                message: Signup successful
+                data:
+                  username: "example_user"
+                  email: "sb@gmail.com"
+                  role: "user"
+        '400':
+          description: Invalid request or user with this email already exists
+          content:
+            application/json:
+              example:
+                message: User with this email already exists
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Failed to signup
+                data: null
+  
+  /brand/user/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                useremail:
+                  type: string
+                  format: email
+                  description: User's email for login
+                password:
+                  type: string
+                  description: User's password for login
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              example:
+                message: Login successful
+                token: "your_generated_token_here"
+                data:
+                  username: "example_user"
+                  email: "sb@gmail.com"
+                  role: "user"
+        '401':
+          description: Invalid password or user not found
+          content:
+            application/json:
+              example:
+                message: Invalid password
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  # blogs
+
   /brand/blog/post:
     post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Blogs
       summary: Create a new blog post
       requestBody:
         content:
@@ -57,3 +177,812 @@ paths:
                 message: Failed to create a blog post
                 data: null
                 theErrorIs: "Error details here"
+  /brand/blog/gets:
+    get:
+      tags:
+        - Blogs
+      summary: Get all blog posts
+      responses:
+        '200':
+          description: Blog posts found
+          content:
+            application/json:
+              example:
+                message: Blog posts found
+                data:
+                  - image: "https://example.com/image1.jpg"
+                    title: "Example Blog Post 1"
+                    description: "This is an example blog post."
+                    commentedBy: []
+                    comments: []
+                    likedBy: []
+                    likes: 0
+                  - image: "https://example.com/image2.jpg"
+                    title: "Example Blog Post 2"
+                    description: "This is another example blog post."
+                    commentedBy: []
+                    comments: []
+                    likedBy: []
+                    likes: 0
+        '404':
+          description: No blog posts found
+          content:
+            application/json:
+              example:
+                message: No blog posts found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/blog/get/{blogId}:
+    get:
+      tags:
+        - Blogs
+      summary: Get a blog post by ID
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post found
+          content:
+            application/json:
+              example:
+                message: Blog post found
+                data:
+                  image: "https://example.com/image.jpg"
+                  title: "Example Blog Post"
+                  description: "This is an example blog post."
+                  commentedBy: []
+                  comments: []
+                  likedBy: []
+                  likes: 0
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              example:
+                message: Blog post not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/blog/update/{blogId}:
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Blogs
+      summary: Update a blog post by ID
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  description: New image URL for the blog post
+                title:
+                  type: string
+                  description: New title for the blog post
+                description:
+                  type: string
+                  description: New description for the blog post
+      responses:
+        '200':
+          description: Blog post updated successfully
+          content:
+            application/json:
+              example:
+                message: Blog post updated successfully
+                data:
+                  image: "https://example.com/new_image.jpg"
+                  title: "Updated Blog Post"
+                  description: "This is the updated blog post."
+                  commentedBy: []
+                  comments: []
+                  likedBy: []
+                  likes: 0
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              example:
+                message: Blog post not found
+                data: null
+        '500':
+          description: Failed to update blog post
+          content:
+            application/json:
+              example:
+                message: Failed to update blog post
+                data: null
+
+  /brand/blog/delete/{blogId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Blogs
+      summary: Delete a blog post by ID
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post deleted successfully
+          content:
+            application/json:
+              example:
+                message: Blog post deleted successfully
+                data:
+                  image: "https://example.com/deleted_image.jpg"
+                  title: "Deleted Blog Post"
+                  description: "This is the deleted blog post."
+                  commentedBy: []
+                  comments: []
+                  likedBy: []
+                  likes: 0
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              example:
+                message: Blog post not found
+                data: null
+        '500':
+          description: Failed to delete blog post
+          content:
+            application/json:
+              example:
+                message: Failed to delete blog post
+                data: null
+
+  /brand/blog/like/{blogId}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Like
+      summary: Like a blog post by ID
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post liked successfully
+          content:
+            application/json:
+              example:
+                message: Blog post liked successfully
+                data:
+                  image: "https://example.com/image.jpg"
+                  title: "Liked Blog Post"
+                  description: "This is the liked blog post."
+                  commentedBy: []
+                  comments: []
+                  likedBy: [ "user1", "user2" ]
+                  likes: 2
+        '401':
+          description: User information not found in the token
+          content:
+            application/json:
+              example:
+                message: User information not found in the token
+                data: null
+        '400':
+          description: You have already liked this blog
+          content:
+            application/json:
+              example:
+                message: You have already liked this blog
+                data:
+                  image: "https://example.com/image.jpg"
+                  title: "Already Liked Blog Post"
+                  description: "This is the already liked blog post."
+                  commentedBy: []
+                  comments: []
+                  likedBy: [ "user1", "user2" ]
+                  likes: 2
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              example:
+                message: Blog post not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+ # comments
+        
+  /brand/blog/createCom/{blogId}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Comments
+      summary: Create a comment on a blog post
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              example:
+                message: Comment created successfully
+                data:
+                  _id: "65e5c5c5415293cf06cdd95c"
+                  user:
+                    _id: "user123"
+                    username: "john_doe"
+                  blog: "65e5c5c5415293cf06cdd95c"
+                  comment: "This is a great post!"
+                blog:
+                  image: "https://example.com/image.jpg"
+                  title: "Sample Blog Post"
+                  description: "This is a sample blog post."
+                  commentedBy: [ "user1", "user2" ]
+                  comments: [ "comment1", "comment2" ]
+                  likedBy: [ "user1", "user2" ]
+                  likes: 2
+        '401':
+          description: User information not found in the token
+          content:
+            application/json:
+              example:
+                message: User information not found in the token
+                data: null
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              example:
+                message: Blog not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/blog/{blogId}/findCommentsOnBlog:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Comments
+      summary: Get comments on a blog post
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comments on the blog retrieved successfully
+          content:
+            application/json:
+              example:
+                message: Comments on the blog retrieved successfully
+                data:
+                  - _id: "comment1"
+                    user:
+                      _id: "user1"
+                      username: "user1_name"
+                    blog: "blog123"
+                    comment: "This is a comment on the blog post."
+                  - _id: "comment2"
+                    user:
+                      _id: "user2"
+                      username: "user2_name"
+                    blog: "blog123"
+                    comment: "Another comment on the blog post."
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              example:
+                message: Blog not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/blog/{blogId}/deleteComments:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Comments
+      summary: Delete comments on a blog post
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          description: ID of the blog post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comments on the blog deleted successfully
+          content:
+            application/json:
+              example:
+                message: Comments on the blog deleted successfully
+                data: null
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              example:
+                message: Blog not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+# users
+  /brand/user/post:
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                role:
+                  type: string
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '201':
+          description: Signup successful
+          content:
+            application/json:
+              example:
+                message: Signup successful
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  username: "john_doe"
+                  email: "john.doe@example.com"
+                  role: "user"
+        '400':
+          description: User with this email already exists
+          content:
+            application/json:
+              example:
+                message: User with this email already exists
+                data: null
+        '500':
+          description: Failed to signup
+          content:
+            application/json:
+              example:
+                message: Failed to signup
+                data: null
+
+  /brand/user/gets:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      summary: Get all users
+      responses:
+        '200':
+          description: Users found
+          content:
+            application/json:
+              example:
+                message: Users found
+                data:
+                  - _id: "user1"
+                    username: "user1_name"
+                    email: "user1@example.com"
+                    role: "user"
+                  - _id: "user2"
+                    username: "user2_name"
+                    email: "user2@example.com"
+                    role: "admin"
+        '404':
+          description: No users found
+          content:
+            application/json:
+              example:
+                message: No users found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/user/get/{userId}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      summary: Get user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              example:
+                message: User found
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  username: "john_doe"
+                  email: "john.doe@example.com"
+                  role: "user"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: User not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/user/update/{userId}:
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      summary: Update user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                role:
+                  type: string
+              required:
+                - username
+                - email
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              example:
+                message: User updated successfully
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  username: "john_doe_updated"
+                  email: "john.doe@example.com"
+                  role: "user"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: User not found
+                data: null
+        '500':
+          description: Failed to update user
+          content:
+            application/json:
+              example:
+                message: Failed to update user
+                data: null
+
+  /brand/user/delete/{userId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      summary: Delete user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              example:
+                message: User deleted successfully
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  username: "john_doe"
+                  email: "john.doe@example.com"
+                  role: "user"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: User not found
+                data: null
+        '500':
+          description: Failed to delete user
+          content:
+            application/json:
+              example:
+                message: Failed to delete user
+                data: null
+
+  # contact 
+
+  
+  /brand/contact/post:
+    post:
+      tags:
+        - Contact
+      summary: Create a new contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                message:
+                  type: string
+              required:
+                - name
+                - email
+      responses:
+        '201':
+          description: Contact created successfully
+          content:
+            application/json:
+              example:
+                message: Contact created successfully
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  name: "John Doe"
+                  email: "john.doe@example.com"
+                  message: "Hello, I have a question."
+                  createdAt: "2024-03-05 14:30:00"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/contact/gets:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Contact
+      summary: Get all contacts
+      responses:
+        '200':
+          description: Contacts found
+          content:
+            application/json:
+              example:
+                message: Contacts found
+                data:
+                  - _id: "contact1"
+                    name: "Contact 1"
+                    email: "contact1@example.com"
+                    message: "Hello, I need assistance."
+                    createdAt: "2024-03-05 14:30:00"
+                  - _id: "contact2"
+                    name: "Contact 2"
+                    email: "contact2@example.com"
+                    message: "Inquiry about your services."
+                    createdAt: "2024-03-05 14:45:00"
+        '404':
+          description: No contacts found
+          content:
+            application/json:
+              example:
+                message: No contacts found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/contact/get/{contactId}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Contact
+      summary: Get contact by ID
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          description: ID of the contact
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact found
+          content:
+            application/json:
+              example:
+                message: Contact found
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  name: "John Doe"
+                  email: "john.doe@example.com"
+                  message: "Hello, I have a question."
+                  createdAt: "2024-03-05 14:30:00"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              example:
+                message: Contact not found
+                data: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+  /brand/contact/delete/{contactId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Contact
+      summary: Delete contact by ID
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          description: ID of the contact
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact deleted successfully
+          content:
+            application/json:
+              example:
+                message: Contact deleted successfully
+                data:
+                  _id: "65e73296c5f4a810ad40c583"
+                  name: "John Doe"
+                  email: "john.doe@example.com"
+                  message: "Hello, I have a question."
+                  createdAt: "2024-03-05 14:30:00"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              example:
+                message: Contact not found
+                data: null
+        '500':
+          description: Failed to delete contact
+          content:
+            application/json:
+              example:
+                message: Failed to delete contact
+                data: null
