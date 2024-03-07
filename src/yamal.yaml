@@ -277,19 +277,20 @@ paths:
             type: string
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                image:
-                  type: string
-                  description: New image URL for the blog post
                 title:
                   type: string
-                  description: New title for the blog post
+                  description: Title of the blog post
                 description:
                   type: string
-                  description: New description for the blog post
+                  description: Description of the blog post
+                image:
+                  type: string
+                  format: binary
+                  description: Image file for the blog post
       responses:
         '200':
           description: Blog post updated successfully

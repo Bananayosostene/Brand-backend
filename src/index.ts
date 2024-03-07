@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import mainRouter from "./routes/index";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
+import cors from 'cors'
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -10,7 +11,17 @@ dotenv.config();
 const app = express();
 const PORT = 5000;
 
+app.use(
+  cors({
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}))
+app.use(express.urlencoded({ extended: true }))
+
 app.use("/brand", mainRouter);
 
 import YAML from "yamljs";
