@@ -4,6 +4,7 @@ interface UserAttributes {
   username: string;
   email: string;
   password: string;
+  gender: string;
   role: string;
 }
 
@@ -24,6 +25,10 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
     },
   },
   password: {
+    type: String,
+    required: true,
+  },
+  gender: {
     type: String,
     required: true,
   },

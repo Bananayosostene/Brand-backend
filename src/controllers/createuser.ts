@@ -4,7 +4,7 @@ import { passwordHashing } from "../utils/passencodingAnddecoding";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, gender, role } = req.body;
 
     console.log("req.body.email is", req.body.email);
     const existingUser = await UserModel.findOne({ email }).select("-password");

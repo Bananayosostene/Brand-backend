@@ -4,8 +4,11 @@ import mainRouter from "./routes/index";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
 import cors from 'cors'
-
+import YAML from "yamljs";
+import path from "path"; 
 import dotenv from "dotenv";
+
+
 dotenv.config();
 
 const app = express();
@@ -24,8 +27,6 @@ app.use(express.urlencoded({ extended: true }))
 
 app.use("/brand", mainRouter);
 
-import YAML from "yamljs";
-import path from "path"; 
 const swaggerJsdoc = YAML.load(path.join(__dirname, "./yamal.yaml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerJsdoc));
 

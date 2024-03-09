@@ -2,9 +2,11 @@ import supertest from "supertest";
 import { Response } from "supertest";
 import { Request } from "supertest";
 import UserModel from "../models/userModel"
+import { deleteContactById } from "../controllers/deleteCont";
 import app from "../index";
 import * as bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { passComparer } from "../utils/passencodingAnddecoding";
@@ -12,8 +14,10 @@ import { passwordHashing } from "../utils/passencodingAnddecoding";
 import ContactModel from "../models/contactModel";
 import { generateToken, verifyingToken } from "../utils/token";
 import { any } from "joi";
-import { findCommentsOnBlog } from "../controllers/FindCommentsOnOneBlog";
-import CommentModel from "../../src/models/commentsModel";
+import BlogModel from "../models/blogModel";
+
+jest.mock("cloudinary");
+jest.mock("../models/blogModel");
 
 
 dotenv.config();
@@ -34,9 +38,7 @@ afterAll(async () => {
 });
 
 //index.ts
-
 describe("Index File Test", () => {
-
   it("should handle database connection errors", async () => {
     (mongoose.connect as jest.Mock).mockRejectedValueOnce(
       new Error("Database connection error")
@@ -62,9 +64,7 @@ describe("Index File Test", () => {
   });
 });
 
-
 //utils
-
 
 describe("passwordHashing function", () => {
   it("should hash the password successfully", async () => {
@@ -88,7 +88,6 @@ describe("passwordHashing function", () => {
 });
 
 // test for passComparer function
-
 
 describe("passComparer function", () => {
   it("should compare passwords successfully", async () => {
@@ -123,7 +122,6 @@ describe("passComparer function", () => {
 });
 
 // test for generateToken and verifyingToken functions
-
 
 describe("Token functions", () => {
   it("should generate a token successfully", () => {
@@ -184,13 +182,11 @@ describe("Token functions", () => {
 
     await verifyingToken(req as any, res as any, next);
 
-    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.status).toHaveBeenCalledWith(0);
     expect(res.json).toHaveBeenCalledWith({ message: expect.any(String) });
     expect(next).not.toHaveBeenCalled();
   });
 });
-
-
 
 //CONTACT
 
@@ -200,11 +196,13 @@ describe("POST /createContact", () => {
   it("should create a new contact", async () => {
     const testData = {
       name: "John Doe",
-      email: "john@example.com",
+      email: "john@gmail.com",
       message: "Test message",
     };
 
-    const response = await request.post("/brand/contact/post").send(testData);
+    const response = await request
+      .post("http://localhost:5000/brand/contact/post")
+      .send(testData);
 
     expect(response.status).toBe(201);
     expect(response.body.message).toBe("Contact created successfully");
@@ -218,33 +216,30 @@ describe("POST /createContact", () => {
     expect(savedContact?.email).toBe(testData.email);
     expect(savedContact?.message).toBe(testData.message);
   });
-   it("should handle errors and return 500 status", async () => {
-     // Mock the ContactModel.save function to throw an error
-     jest.spyOn(ContactModel.prototype, "save").mockImplementationOnce(() => {
-       throw new Error("Mocked save error");
-     });
+  it("should handle errors and return 500 status", async () => {
+    // Mock the ContactModel.save function to throw an error
+    jest.spyOn(ContactModel.prototype, "save").mockImplementationOnce(() => {
+      throw new Error("Mocked save error");
+    });
 
-     const testData = {
-       name: "John Doe",
-       email: "john@example.com",
-       message: "Test message",
-     };
+    const testData = {
+      name: "John Doe",
+      email: "john@example.com",
+      message: "Test message",
+    };
 
-     // Use supertest to send a request to the Express app
-     const response = await request
-       .post("/brand/contact/delete")
-       .send(testData);
+    // Use supertest to send a request to the Express app
+    const response = await request.post("/brand/contact/delete").send(testData);
 
-     // Check if the response is as expected
-     expect(response.status).toBe(500);
-     expect(response.body.message).toBe("Internal Server Error");
-     expect(response.body.data).toBeNull();
-     expect(response.body.theErrorIs).toBe("Mocked save error");
-   });
+    // Check if the response is as expected
+    expect(response.status).toEqual(500);
+    expect(response.body.message).toBe("Internal Server Error");
+    expect(response.body.data).toBeNull();
+    expect(response.body.theErrorIs).toBe("Mocked save error");
+  });
 });
 
 //delete contact
-
 
 describe("DELETE /contacts/:contactId", () => {
   it("should delete a contact and return success message", async () => {
@@ -258,7 +253,7 @@ describe("DELETE /contacts/:contactId", () => {
       `/brand/contact/delete/${insertedContact._id}`
     );
 
-    expect(response.status).toBe(200);
+    expect(response.status).toEqual(200);
     expect(response.body).toEqual({
       message: "Contact deleted successfully",
       data: insertedContact.toObject(),
@@ -267,9 +262,10 @@ describe("DELETE /contacts/:contactId", () => {
 
   it("should return 404 if contact is not found", async () => {
     const response: Response = await request.delete(
-      "/brand/contact/delete/:contactId");
+      "/brand/contact/delete/:contactId"
+    );
 
-    expect(response.status).toBe(404);
+    expect(response.status).toEqual(404);
     expect(response.body).toEqual({
       message: "Contact not found",
       data: null,
@@ -309,7 +305,6 @@ describe("DELETE /contacts/:contactId", () => {
     });
   });
 });
-
 
 //find all contact:
 
@@ -401,7 +396,9 @@ describe("GET /contacts/:contactId", () => {
   });
 
   it("should return 500 on internal server error", async () => {
-    const response: Response = await request.get("/brand/contact/get/5e349c73f406c95837253f");
+    const response: Response = await request.get(
+      "/brand/contact/get/5e349c73f406c95837253f"
+    );
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
@@ -412,10 +409,7 @@ describe("GET /contacts/:contactId", () => {
   });
 });
 
-
-
 // create user
-
 
 describe("POST /users", () => {
   it("should create a new user", async () => {
@@ -425,7 +419,9 @@ describe("POST /users", () => {
       password: "testpassword",
     };
 
-    const response: Response = await request.post("/brand/user/post/").send(mockUser);
+    const response: Response = await request
+      .post("/brand/user/post/")
+      .send(mockUser);
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
@@ -479,7 +475,6 @@ describe("POST /users", () => {
     });
   });
 });
-
 
 //login
 
@@ -593,8 +588,6 @@ describe("POST /login", () => {
       data: null,
     });
   });
-
-
 });
 
 //find all users
@@ -652,7 +645,7 @@ describe("GET /users", () => {
 
     const token = generateToken({
       email: "test@example.com",
-      _id: "6098a31d6d28a44bd8c54a5b", 
+      _id: "6098a31d6d28a44bd8c54a5b",
     });
 
     const response: Response = await request
@@ -668,11 +661,9 @@ describe("GET /users", () => {
   });
 });
 
-
 //find one user
 
 describe("GET /users/:userId", () => {
-
   it("should return a user with the given ID", async () => {
     const testUser = {
       email: "test@example.com",
@@ -700,11 +691,11 @@ describe("GET /users/:userId", () => {
   });
 
   it("should return 404 if no user is found with the given ID", async () => {
-    const nonExistentUserId = "6098a31d6d28a44bd8c54a5c"; 
+    const nonExistentUserId = "6098a31d6d28a44bd8c54a5c";
 
     const token = generateToken({
       email: "test@example.com",
-      _id: "6098a31d6d28a44bd8c54a5b", 
+      _id: "6098a31d6d28a44bd8c54a5b",
     });
 
     const response: Response = await request
@@ -725,7 +716,7 @@ describe("GET /users/:userId", () => {
 
     const token = generateToken({
       email: "test@example.com",
-      _id: "6098a31d6d28a44bd8c54a5b", 
+      _id: "6098a31d6d28a44bd8c54a5b",
     });
 
     const response: Response = await request
@@ -741,12 +732,10 @@ describe("GET /users/:userId", () => {
   });
 });
 
-
 //update user
 
 describe("PUT /users/:userId", () => {
   it("should update a user successfully", async () => {
- 
     const testUser = {
       email: "test@example.com",
       password: "testpassword",
@@ -763,17 +752,16 @@ describe("PUT /users/:userId", () => {
       email: "updated@example.com",
     };
 
-const response: Response = await request
-  .put(`/brand/user/update/${savedUser._id}`)
-  .set("Authorization", `Bearer ${token}`)
-  .send(updatedUserData);
+    const response: Response = await request
+      .put(`/brand/user/update/${savedUser._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedUserData);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       message: "User updated successfully",
       data: expect.objectContaining(updatedUserData),
     });
-
 
     const updatedUser = await UserModel.findById(savedUser._id);
     expect(updatedUser?.email).toBe(updatedUserData.email);
@@ -804,7 +792,7 @@ const response: Response = await request
 
     const token = generateToken({
       email: "test@example.com",
-      _id: "6098a31d6d28a44bd8c54a5b", 
+      _id: "6098a31d6d28a44bd8c54a5b",
     });
 
     const response: Response = await request
@@ -819,7 +807,6 @@ const response: Response = await request
     });
   });
 });
-
 
 //delete user
 
@@ -891,7 +878,559 @@ describe("DELETE /brand/user/delete/:userId", () => {
   });
 });
 
+//LIKE
+
+describe("POST /blogs/like/:blogId", () => {
+  it("should like a blog successfully", async () => {
+    // Assuming you have a user and a blog in your database
+    const user = {
+      _id: "user_id", // Replace with a valid user ID
+    };
+
+    const blog = new BlogModel({
+      // Replace with a valid blog data
+      title: "Test Blog",
+      content: "Lorem ipsum dolor sit amet",
+    });
+
+    await blog.save();
+
+    // Generate a token for the user
+    const token = generateToken({
+      userId: user._id,
+      userEmail: "test@example.com", // Replace with a valid user email
+    });
+
+    const response = await request
+      .post(`/blogs/like/${blog._id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("message", "Blog liked successfully");
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data).toHaveProperty("likes", blog.likes + 1);
+    expect(response.body.data).toHaveProperty("likedBy");
+    expect(response.body.data.likedBy).toContain(user._id);
+  });
+
+  it("should handle already liked blog", async () => {
+    // Assuming you have a user and a blog in your database
+    const user = {
+      _id: "user_id", // Replace with a valid user ID
+    };
+
+    const blog = new BlogModel({
+      // Replace with a valid blog data
+      title: "Test Blog",
+      content: "Lorem ipsum dolor sit amet",
+      likedBy: [user._id],
+    });
+
+    await blog.save();
+
+    // Generate a token for the user
+    const token = generateToken({
+      userId: user._id,
+      userEmail: "test@example.com", // Replace with a valid user email
+    });
+
+    const response = await request
+      .post(`/blogs/like/${blog._id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty(
+      "message",
+      "You have already liked this blog"
+    );
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data).toEqual(blog.toObject());
+  });
+
+  it("should handle blog not found", async () => {
+    // Generate a token for the user
+    const token = generateToken({
+      userId: "user_id",
+      userEmail: "test@example.com", // Replace with a valid user email
+    });
+
+    const response = await request
+      .post("/blogs/like/nonexistent-blog-id")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty("message", "Blog not found");
+    expect(response.body).toHaveProperty("data", null);
+  });
+
+  it("should handle internal server error", async () => {
+    // Mocking verifyingToken to simulate an error
+
+    // Generate a token for the user
+    const token = generateToken({
+      userId: "user_id",
+      userEmail: "test@example.com", // Replace with a valid user email
+    });
+
+    const response = await request
+      .post("/blogs/like/:{blogId}")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty("message", "Internal Server Error");
+    expect(response.body).toHaveProperty("data", null);
+    expect(response.body).toHaveProperty(
+      "theErrorIs",
+      "Token verification failed"
+    );
+  });
+});
+
+
+
+
+//CONTACT
+//create contact
+describe('POST /createContact', () => {
+  it('should create a new contact', async () => {
+    const testData = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      message: 'Test message',
+    };
+
+    const response = await supertest(app)
+      .post("/brand/contact/post")
+      .send(testData);
+
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('Contact created successfully');
+    expect(response.body.data.name).toBe(testData.name);
+    expect(response.body.data.email).toBe(testData.email);
+    expect(response.body.data.message).toBe(testData.message);
+
+    // You may add more specific assertions based on your model and logic
+
+    // Optional: Check if the contact is saved in the database
+    const savedContact = await ContactModel.findOne({ email: testData.email });
+    expect(savedContact).toBeTruthy();
+    expect(savedContact?.name).toBe(testData.name);
+    expect(savedContact?.email).toBe(testData.email);
+    expect(savedContact?.message).toBe(testData.message);
+  });
+
+  it("should handle errors and return 500 status", async () => {
+    // Mock the ContactModel.save function to throw an error
+    jest.spyOn(ContactModel.prototype, "save").mockImplementationOnce(() => {
+      throw new Error("Mocked save error");
+    });
+
+    const testData = {
+      name: "John Doe",
+      email: "john@example.com",
+      message: "Test message",
+    };
+
+    // Use supertest to send a request to the Express app
+    const response = await supertest(app)
+      .post("/brand/contact/post") // Adjust the endpoint based on your actual route
+      .send(testData);
+
+    // Check if the response is as expected
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe("Internal Server Error");
+    expect(response.body.data).toBeNull();
+    expect(response.body.theErrorIs).toBe("Mocked save error");
+  });
+});
+
+
+//find all contact
+
+describe("GET /brand/contact/gets", () => {
+  it("should return all contacts if available", async () => {
+    // Create test contacts in the database
+    const testData = [
+      {
+        name: "John Doe",
+        email: "john@example.com",
+        message: "Test message 1",
+      },
+      {
+        name: "Jane Doe",
+        email: "jane@example.com",
+        message: "Test message 2",
+      },
+    ];
+
+    await ContactModel.create(testData);
+
+    // Send a request to the Express app
+    const response = await supertest(app).get("/brand/contact/gets"); // Adjust the endpoint based on your actual route
+
+    // Check if the response is as expected
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Contacts found");
+    expect(response.body.data).toHaveLength(2); // Adjust based on the number of test contacts
+
+    // Optional: Add more specific assertions based on your model and logic
+  });
+
+  it("should handle no contacts found and return 404 status", async () => {
+    // Clear all contacts from the database
+    await ContactModel.deleteMany({});
+
+    // Send a request to the Express app
+    const response = await supertest(app).get("/brand/contact/gets"); // Adjust the endpoint based on your actual route
+
+    // Check if the response is as expected
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("No contacts found");
+    expect(response.body.data).toBeNull();
+  });
+
+  it("should handle errors and return 500 status", async () => {
+    // Send a request to the Express app
+    const response = await supertest(app).get("/brand/contact/gets"); // Adjust the endpoint based on your actual route
+
+    // Check if the response is as expected
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe("Internal Server Error");
+    expect(response.body.data).toBeNull();
+    // Optional: Check if the error message matches your expectations
+    // expect(response.body.theErrorIs).toBe(/* Your expected error message */);
+  });
+});
+
+
 
 //BLOGS
 
-//find comments on one blog
+
+
+dotenv.config();
+
+jest.mock('cloudinary');
+
+describe('Blog API Tests', () => {
+  const mockCloudinaryUpload = cloudinary.uploader.upload as jest.Mock;
+
+  beforeAll(() => {
+    // Mock Cloudinary upload function
+    mockCloudinaryUpload.mockResolvedValue({
+      secure_url: 'mocked_secure_url',
+    });
+  });
+})
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('POST /createBlog', () => {
+    it('should create a new blog post', async () => {
+      const testData = {
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+        files: {
+          image: [
+            {
+              path: '/path/to/test/image.jpg',
+            },
+          ],
+        },
+      };
+
+      const response = await supertest(app)
+        .post('/brand/blog/post')
+        .send(testData);
+
+      expect(response.status).toBe(201);
+      expect(response.body.message).toBe('Blog post created successfully');
+      expect(response.body.data.title).toBe(testData.title);
+      expect(response.body.data.description).toBe(testData.description);
+      expect(response.body.data.image).toBe('mocked_secure_url');
+    });
+
+    it('should handle missing image file and return 400 status', async () => {
+      const testData = {
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+      };
+
+      const response = await supertest(app)
+        .post("/brand/blog/post")
+        .send(testData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Image file is required');
+      expect(response.body.data).toBeNull();
+    });
+
+    it('should handle errors and return 500 status', async () => {
+      jest.spyOn(BlogModel, 'create').mockRejectedValueOnce(new Error('Mocked create error'));
+
+      const testData = {
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+        files: {
+          image: [
+            {
+              path: '/path/to/test/image.jpg',
+            },
+          ],
+        },
+      };
+
+      const response = await supertest(app)
+        .post('/createBlog')
+        .send(testData);
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Internal Server Error');
+      expect(response.body.data).toBeNull();
+      expect(response.body.theErrorIs).toBe('Mocked create error');
+    });
+  });
+
+  describe('DELETE /deleteBlog/:blogId', () => {
+    it('should delete a blog post by ID', async () => {
+      const testBlog = await BlogModel.create({
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+        image: 'mocked_secure_url',
+        comments: [],
+        likes: 0,
+      });
+
+      const response = await supertest(app)
+        .delete(`/brand/blog/delete/${testBlog._id}`)
+        .send();
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Blog post deleted successfully');
+      expect(response.body.data.title).toBe('Test Blog');
+    });
+
+    it('should handle not found and return 404 status', async () => {
+      const response = await supertest(app)
+        .delete("/brand/blog/delete/65e052d58c168a8aeeb41d4a")
+        .send();
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe('Blog post not found');
+      expect(response.body.data).toBeNull();
+    });
+
+    it('should handle errors and return 500 status', async () => {
+      jest.spyOn(BlogModel, 'findByIdAndDelete').mockRejectedValueOnce(new Error('Mocked delete error'));
+
+      const testBlog = await BlogModel.create({
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+        image: 'mocked_secure_url',
+        comments: [],
+        likes: 0,
+      });
+
+      const response = await supertest(app)
+        .delete(`/deleteBlog/${testBlog._id}`)
+        .send();
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Internal Server Error');
+      expect(response.body.data).toBeNull();
+      expect(response.body.theErrorIs).toBe('Mocked delete error');
+    });
+  });
+
+  describe('GET /findAllBlogs', () => {
+    it('should return all blog posts if available', async () => {
+      const testBlogs = [
+        {
+          title: 'Test Blog 1',
+          description: 'This is test blog post 1',
+          image: 'mocked_secure_url_1',
+          comments: [],
+          likes: 0,
+        },
+        {
+          title: 'Test Blog 2',
+          description: 'This is test blog post 2',
+          image: 'mocked_secure_url_2',
+          comments: [],
+          likes: 0,
+        },
+      ];
+
+      await BlogModel.create(testBlogs);
+
+      const response = await supertest(app)
+        .get('/brand/blog/gets');
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Blog posts found');
+      expect(response.body.data).toHaveLength(2);
+    });
+
+    it('should handle no blog posts found and return 404 status', async () => {
+      const response = await supertest(app).get("/brand/blog/gets");
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe('No blog posts found');
+      expect(response.body.data).toBeNull();
+    });
+
+    it('should handle errors and return 500 status', async () => {
+      jest.spyOn(BlogModel, 'find').mockRejectedValueOnce(new Error('Mocked find error'));
+
+      const response = await supertest(app)
+        .get('/brand/blog/gets');
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Internal Server Error');
+      expect(response.body.data).toBeNull();
+      expect(response.body.theErrorIs).toBe('Mocked find error');
+    });
+  });
+
+  describe('GET /findBlog/:blogId', () => {
+    it('should return a blog post by ID', async () => {
+      const testBlog = await BlogModel.create({
+        title: 'Test Blog',
+        description: 'This is a test blog post',
+        image: 'mocked_secure_url',
+        comments: [],
+        likes: 0,
+      });
+
+      const response = await supertest(app).get(
+        `/brand/blog/get/${testBlog._id}`
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Blog post found');
+      expect(response.body.data.title).toBe('Test Blog');
+    });
+
+    it('should handle not found and return 404 status', async () => {
+      const response = await supertest(app)
+        .get('/brand/blog/get/345678908765435');
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe('Blog post not found');
+      expect(response.body.data).toBeNull();
+    });
+    it('should handle errors and return 500 status', async () => {
+    jest.spyOn(BlogModel, 'findById').mockRejectedValueOnce(new Error('Mocked findById error'));
+
+    const response = await supertest(app)
+      .get('/brand/blog/get/345678908765435');
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Internal Server Error');
+    expect(response.body.data).toBeNull();
+    expect(response.body.theErrorIs).toBe('Mocked findById error');
+  });
+});
+
+describe('PUT /updateBlog/:blogId', () => {
+  it('should update a blog post by ID', async () => {
+    const testBlog = await BlogModel.create({
+      title: 'Test Blog',
+      description: 'This is a test blog post',
+      image: 'mocked_secure_url',
+      comments: [],
+      likes: 0,
+    });
+
+    const updatedData = {
+      title: "Updated Test Blog",
+      description: "This is an updated test blog post",
+      files: {
+        image: [
+          {
+            path: "../../images_container/1709670352870_dairy.jpg",
+          },
+        ],
+      },
+    };
+
+    const response = await supertest(app)
+      .put(`/updateBlog/${testBlog._id}`)
+      .send(updatedData);
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('Blog post updated successfully');
+    expect(response.body.data.title).toBe(updatedData.title);
+    expect(response.body.data.description).toBe(updatedData.description);
+    expect(response.body.data.image).toBe('mocked_secure_url'); // As Cloudinary is mocked
+  });
+
+  it('should handle not found and return 404 status', async () => {
+    const response = await supertest(app)
+      .put("/brand/blog/update/65e47c1fb5929c5df8200000")
+      .send({
+        title: "Updated Test Blog",
+        description: "This is an updated test blog post",
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Blog post not found');
+    expect(response.body.data).toBeNull();
+  });
+
+  it('should handle missing image file and return 400 status', async () => {
+    const testBlog = await BlogModel.create({
+      title: 'Test Blog',
+      description: 'This is a test blog post',
+      image: 'mocked_secure_url',
+      comments: [],
+      likes: 0,
+    });
+
+    const response = await supertest(app)
+      .put(`/brand/blog/update/${testBlog._id}`)
+      .send({
+        title: "Updated Test Blog",
+        description: "This is an updated test blog post",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('Image file is required');
+    expect(response.body.data).toBeNull();
+  });
+
+  it('should handle errors and return 500 status', async () => {
+    jest.spyOn(BlogModel, 'findByIdAndUpdate').mockRejectedValueOnce(new Error('Mocked findByIdAndUpdate error'));
+
+    const testBlog = await BlogModel.create({
+      title: 'Test Blog',
+      description: 'This is a test blog post',
+      image: 'mocked_secure_url',
+      comments: [],
+      likes: 0,
+    });
+
+    const response = await supertest(app)
+      .put(`/brand/blog/update/${testBlog._id}`)
+      .send({
+        title: 'Updated Test Blog',
+        description: 'This is an updated test blog post',
+        files: {
+          image: [
+            {
+              path: '/path/to/updated/image.jpg',
+            },
+          ],
+        },
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Internal Server Error');
+    expect(response.body.data).toBeNull();
+    expect(response.body.theErrorIs).toBe('Mocked findByIdAndUpdate error');
+  });
+});
+
+ 

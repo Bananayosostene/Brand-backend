@@ -50,9 +50,9 @@ paths:
                 password:
                   type: string
                   description: User's password
-                role:
+                gender:
                   type: string
-                  description: User's role (optional, default: "user")
+                  description: User's gender
       responses:
         '201':
           description: User created successfully
@@ -745,6 +745,9 @@ paths:
                   format: email
                 password:
                   type: string
+                gender:
+                  type: string
+                  description: User's gender
                 role:
                   type: string
               required:
