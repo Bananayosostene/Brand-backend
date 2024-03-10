@@ -45,11 +45,12 @@ export const createComment = async (
       }
 
       const newComment = await CommentModel.create({
-      
-        userId: user.username,
+        user: {
+          _id: user._id,
+          username: user.username,
+        },
         blog: blogId,
         comment: comment,
-          
       });
 
       // Automatic update of BlogModel arrays
@@ -57,7 +58,7 @@ export const createComment = async (
         blogId,
         {
           $push: {
-            commentedBy: user.username,
+            commentedBy: user._id,
             comments: newComment._id,
           },
         },
@@ -68,8 +69,10 @@ export const createComment = async (
         message: "Comment created successfully",
         data: {
           _id: newComment._id,
-          userId: user.username,
-          username: user.username,
+          user: {
+            _id: user._id,
+            username: user.username,
+          },
           blog: blogId,
           comment: newComment.comment,
         },

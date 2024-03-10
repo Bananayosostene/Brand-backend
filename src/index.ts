@@ -30,10 +30,10 @@ app.use("/brand", mainRouter);
 const swaggerJsdoc = YAML.load(path.join(__dirname, "./yamal.yaml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerJsdoc));
 
-const DbConnection: string = process.env.onlineDB as string;
+const connector: string = process.env.dbConnection as string;
 mongoose
-.connect(DbConnection)
-.then(() => {
+  .connect(connector)
+  .then(() => {
     console.log("Database connected successfully!");
     app.listen(PORT, () => {
       console.log(`Server listenings at http://localhost:${PORT}`);

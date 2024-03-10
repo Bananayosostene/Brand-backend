@@ -11,7 +11,7 @@ export const login = async (req: Request, res: Response) => {
     
 
     if (user) {
-      console.log(user);
+      // console.log(user);
       let userInfos = { email: user.email, _id: user._id };
 
       let token = generateToken(userInfos);
