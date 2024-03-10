@@ -8,7 +8,9 @@ export const findBlogById = async (req: Request, res: Response) => {
   try {
     const id: string = req.params.blogId;
     const blog = await BlogModel.findById(id)
-      .populate("comments");
+      .populate("comments", "comment")
+      .populate("commentedBy", "username")
+      .populate("likedBy", "username");
 
     if (blog) {
       return res.status(200).json({
