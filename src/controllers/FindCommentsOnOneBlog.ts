@@ -6,7 +6,10 @@ export const findCommentsOnBlog = async (req: Request, res: Response) => {
   try {
     const { blogId } = req.params;
 
-    const comments = await CommentModel.find({ blog: blogId });
+    const comments = await CommentModel.find({ blog: blogId })
+      .populate("user")
+      .populate("blog")
+      .populate("comment");
 
     return res.status(200).json({
       message: "Comments on the blog retrieved successfully",

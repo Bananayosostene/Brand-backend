@@ -34,8 +34,10 @@ export const createComment = async (
           data: null,
         });
       }
-
-      const user = await UserModel.findById(userId);
+    console.log('userId', userId);
+   
+    const user = await UserModel.findById(userId);
+    console.log('user........',user?.username );
 
       if (!user) {
         return res.status(404).json({
@@ -45,10 +47,8 @@ export const createComment = async (
       }
 
       const newComment = await CommentModel.create({
-        user: {
-          _id: user._id,
-          username: user.username,
-        },
+        user: user._id,
+        username: user.username,
         blog: blogId,
         comment: comment,
       });
@@ -59,7 +59,7 @@ export const createComment = async (
         {
           $push: {
             commentedBy: user._id,
-            comments: newComment._id,
+            comments: newComment._id, 
           },
         },
         { new: true }
@@ -68,12 +68,10 @@ export const createComment = async (
       return res.status(201).json({
         message: "Comment created successfully",
         data: {
-          _id: newComment._id,
-          user: {
-            _id: user._id,
-            username: user.username,
-          },
-          blog: blogId,
+          blogId: blogId,
+          UserId: user._id,
+          username: user.username,
+          comId: newComment._id,
           comment: newComment.comment,
         },
       });
