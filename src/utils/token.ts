@@ -9,7 +9,7 @@ interface AuthenticatedRequest extends Request {
   userEmail?: string;
 }
 let secret = "mySecret";
-let duration = "30m";
+let duration = "24h";
 export const generateToken = (payload: any): string => {
   let token = jwt.sign(payload, secret, {
     expiresIn: duration,

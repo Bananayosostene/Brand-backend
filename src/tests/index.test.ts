@@ -46,7 +46,7 @@ afterAll(async () => {
   await mongoose.disconnect();
 });
 
-//index.ts
+//index.ts 
 describe("Index File Test", () => {
   it("should handle database connection errors", async () => {
     (mongoose.connect as jest.Mock).mockRejectedValueOnce(
