@@ -16,6 +16,15 @@ import { generateToken, verifyingToken } from "../utils/token";
 import { any } from "joi";
 import BlogModel from "../models/blogModel";
 
+const response =  supertest(app)
+  .post("/brand/blog/post")
+  .set(
+    "Authorization",
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNiYW5hbmF5bzk4QGdtYWlsLmNvbSIsIl9pZCI6IjY1ZWUwOTIzZjNiZTMwMWFiOTVkZmUyNyIsImlhdCI6MTcxMDE3MTI5NCwiZXhwIjoxNzEwMTczMDk0fQ.YyJSYDi1_Sm61MQCtDdGO7FdP1SK845yZv9cIvW3-TE"
+  )
+
+
+
 jest.mock("cloudinary");
 jest.mock("../models/blogModel");
 
@@ -1433,4 +1442,5 @@ describe('PUT /updateBlog/:blogId', () => {
   });
 });
 
- 
+//comments
+
