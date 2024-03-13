@@ -4,7 +4,7 @@ import { verifyingToken } from "../utils/token";
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    _id:any ;
+    _id: any;
   };
 }
 
@@ -15,8 +15,8 @@ export const likingBlogById = async (
   try {
     verifyingToken(req, res, async () => {
       const blogId = req.params.blogId;
-        const userId = req.user?._id; 
-        
+      const userId = req.user?._id;
+
       if (!userId) {
         return res.status(401).json({
           message: "User information not found in the token",
@@ -27,18 +27,21 @@ export const likingBlogById = async (
 
       if (blog) {
         // Check if the user has already liked the blog
-        if (blog.likedBy.includes(userId)) {
-          return res.status(400).json({
-            message: "You have already liked this blog",
-            data: blog,
-          });
+        const likedIndex = blog.likedBy.indexOf(userId);
+        if (likedIndex !== -1) {
+          // If the user has already liked, remove the like
+          blog.likes -= 1;
+          blog.likedBy.splice(likedIndex, 1);
+        } else {
+          // If the user has not liked, add the like
+          blog.likes += 1;
+          blog.likedBy.push(userId);
         }
 
-        blog.likes += 1;
-        blog.likedBy.push(userId);
         await blog.save();
+
         return res.status(200).json({
-          message: "Blog liked successfully",
+          message: "Blog like updated successfully",
           data: blog,
         });
       } else {
