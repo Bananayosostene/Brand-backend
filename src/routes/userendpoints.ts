@@ -19,4 +19,4 @@ userRouter.get("/get/:userId", findUserById);
 userRouter.get("/gets", findAllUsers);
 userRouter.delete("/delete/:userId", deleteUserById);
 
-export default userRouter;
+export default userRouter; // export
