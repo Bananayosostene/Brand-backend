@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+// import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 
 export const passwordHashing = async (password: string): Promise<string> => {

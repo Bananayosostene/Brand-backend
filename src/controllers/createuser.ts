@@ -6,7 +6,6 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const { username, email, password, gender, role } = req.body;
 
-    console.log("req.body.email is", req.body.email);
     const existingUser = await UserModel.findOne({ email }).select("-password");
     if (existingUser) {
       return res.status(400).json({
