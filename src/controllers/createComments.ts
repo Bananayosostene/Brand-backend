@@ -37,7 +37,6 @@ export const createComment = async (
     console.log('userId', userId);
    
     const user = await UserModel.findById(userId);
-    console.log('user........',user?.username );
 
       if (!user) {
         return res.status(404).json({
@@ -45,7 +44,8 @@ export const createComment = async (
           data: null,
         });
       }
-
+  console.log("===================", user.username);
+  
       const newComment = await CommentModel.create({
         user: user._id,
         username: user.username,

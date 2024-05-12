@@ -11,7 +11,6 @@ cloudinary.config({
 });
 
 export const updateBlogById = async (req: Request, res: Response) => {
-  try {
     const id: string = req.params.blogId;
 
     const blog = await BlogModel.findById(id);
@@ -59,11 +58,4 @@ export const updateBlogById = async (req: Request, res: Response) => {
         data: null,
       });
     }
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    return res.status(500).json({
-      message: "Internal Server Error",
-      data: null,
-    });
-  }
 };

@@ -17,7 +17,7 @@ export const likingBlogById = async (
       const blogId = req.params.blogId;
       const userId = req.user?._id;
 
-      if (!userId) {
+      if (!userId) {  
         return res.status(401).json({
           message: "User information not found in the token",
         });
@@ -26,14 +26,11 @@ export const likingBlogById = async (
       const blog = await BlogModel.findById(blogId);
 
       if (blog) {
-        // Check if the user has already liked the blog
         const likedIndex = blog.likedBy.indexOf(userId);
         if (likedIndex !== -1) {
-          // If the user has already liked, remove the like
           blog.likes -= 1;
           blog.likedBy.splice(likedIndex, 1);
         } else {
-          // If the user has not liked, add the like
           blog.likes += 1;
           blog.likedBy.push(userId);
         }

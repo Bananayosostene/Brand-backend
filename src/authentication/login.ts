@@ -3,7 +3,6 @@ import UserModel from "../models/userModel";
 import { passComparer } from "../utils/passencodingAnddecoding";
 import { generateToken } from "../utils/token";
 export const login = async (req: Request, res: Response) => {
-  try {
     const userEmail = req.body.useremail;
     const userPassword = req.body.password;
 
@@ -24,25 +23,13 @@ export const login = async (req: Request, res: Response) => {
           tokenisthe: `${token}`,
           data: user,
         });
-      } else {
-        return res.status(401).json({
-          message: "invalid password",
-          data: null,
-        });
-      }
+      } 
     } else {
       return res.status(401).json({
         message: `user with ${userEmail} not found`,
         data: null,
       });
     }
-  } catch (error:any) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      data: null,
-      theErrorIs: error.message,
-    });
-  }
 };
 
 

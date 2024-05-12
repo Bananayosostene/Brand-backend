@@ -124,6 +124,43 @@ paths:
                 message: Internal Server Error
                 data: null
 
+  /brand/user/logout:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Blogs
+      summary: User logout
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Logged out successfully
+          content:
+            application/json:
+              example:
+                message: Logged out successfully
+        '400':
+          description: Token not found in request
+          content:
+            application/json:
+              example:
+                message: Token not found in request
+        '401':
+          description: Token is already blacklisted
+          content:
+            application/json:
+              example:
+                message: Token is already blacklisted
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Internal Server Error
+                data: null
+
+
   # blogs
 
   /brand/blog/post:

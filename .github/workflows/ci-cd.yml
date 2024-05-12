@@ -27,3 +27,23 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+
+        # e-commerce project
+        env:
+          CC_TEST_REPORTER_ID: '0f994c643098c5170ff39f19aae8b135c283a936c3403694a592b13bd6d72c7e'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          

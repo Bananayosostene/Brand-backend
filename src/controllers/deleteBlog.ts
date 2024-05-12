@@ -35,3 +35,5 @@ export const deleteBlogById = async (req: Request, res: Response) => {
     });
   }
 };
+
+// delete

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-
+import BlacklistModel from "../models/blacklist";
 import { Request, Response, NextFunction } from "express";
 
 // Extend the Request interface to include the new properties
@@ -31,6 +31,13 @@ export const verifyingToken = async (
       });
     }
 
+  const blacklistedToken = await BlacklistModel.findOne({ token });
+  if (blacklistedToken) {
+    return res.status(401).json({
+      message: "Token is blacklisted. Please log in again.",
+    });
+  }
+
     jwt.verify(token, secret, (error, decoded) => {
       if (error) {
         return res.status(401).json({
@@ -39,7 +46,6 @@ export const verifyingToken = async (
       }
       req.user = decoded;
    
-
       next();
     });
   } catch (err) {
